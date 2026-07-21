@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>High Risk Area Summary</title>
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="favicon-180.png">
+<style>
+:root{
+  --a:#7c6cff;      /* aurora violet */
+  --b:#22d3ee;      /* aurora cyan */
+  --a-rgb:124,108,255;
+  --b-rgb:34,211,238;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Background ── */
+#loading {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+  overflow: hidden;
+
+  /* Animated aurora gradient background */
+  background: linear-gradient(135deg, #0b1020 0%, #171a3a 38%, #0e2a3f 70%, #0b1524 100%);
+  background-size: 400% 400%;
+  animation: bgShift 12s ease infinite;
+}
+
+@keyframes bgShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Soft aurora glow blobs behind the card */
+#loading::before,
+#loading::after{
+  content:'';
+  position:absolute;
+  width:60vmax; height:60vmax;
+  border-radius:50%;
+  filter: blur(90px);
+  opacity:.35;
+  pointer-events:none;
+}
+#loading::before{ background: radial-gradient(circle, rgba(var(--a-rgb),.55), transparent 60%); top:-20vmax; left:-15vmax; animation: blobFloat 14s ease-in-out infinite; }
+#loading::after { background: radial-gradient(circle, rgba(var(--b-rgb),.45), transparent 60%); bottom:-22vmax; right:-16vmax; animation: blobFloat 16s ease-in-out infinite reverse; }
+
+@keyframes blobFloat{
+  0%,100%{ transform: translate(0,0) scale(1); }
+  50%    { transform: translate(4vmax,3vmax) scale(1.12); }
+}
+
+/* ── Floating particles ── */
+.particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  animation: floatUp linear infinite;
+}
+
+@keyframes floatUp {
+  0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+  10%  { opacity: 0.40; }
+  90%  { opacity: 0.18; }
+  100% { transform: translateY(-20vh) scale(1.4); opacity: 0; }
+}
+
+/* ── Card ── */
+.loader-card {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+  padding: 46px 52px 42px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04) inset, 0 0 60px -20px rgba(var(--a-rgb),.5);
+  animation: cardIn 0.7s cubic-bezier(0.16,1,0.3,1) both;
+  max-width: 90%;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(28px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Brand eyebrow ── */
+.brand-eyebrow{
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, var(--a), var(--b));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: textFadeIn 0.8s 0.25s ease both;
+}
+
+/* ── Icon / logo area ── */
+.icon-wrap {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  display: grid;
+  place-items: center;
+}
+
+/* Glow rings */
+.icon-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(var(--a-rgb), 0.40);
+  animation: ringPulse 2.4s ease-out infinite;
+}
+
+.icon-ring:nth-child(2) {
+  border-color: rgba(var(--b-rgb), 0.32);
+  animation-delay: 0.8s;
+}
+
+.icon-ring:nth-child(3) {
+  border-color: rgba(var(--a-rgb), 0.16);
+  animation-delay: 1.6s;
+}
+
+@keyframes ringPulse {
+  0%   { transform: scale(0.82); opacity: 1; }
+  100% { transform: scale(1.75); opacity: 0; }
+}
+
+/* Logo holder */
+.logo-holder {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 30% 25%, rgba(var(--a-rgb),.25), rgba(var(--b-rgb),.12));
+  box-shadow: 0 10px 30px -6px rgba(var(--a-rgb),.55), 0 0 0 1px rgba(255,255,255,.12) inset;
+  animation: iconBreathe 3.4s ease-in-out infinite;
+}
+
+@keyframes iconBreathe {
+  0%, 100% { transform: scale(1);    box-shadow: 0 10px 30px -6px rgba(var(--a-rgb),.55), 0 0 0 1px rgba(255,255,255,.12) inset; }
+  50%      { transform: scale(1.06); box-shadow: 0 16px 40px -6px rgba(var(--b-rgb),.6),  0 0 0 1px rgba(255,255,255,.18) inset; }
+}
+
+.logo-holder img {
+  width: 74px;
+  height: 74px;
+  object-fit: contain;
+  border-radius: 18px;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35));
+  animation: logoFloat 4s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+
+/* ── Text ── */
+.loader-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #f8fafc;
+  letter-spacing: -0.02em;
+  text-align: center;
+  line-height: 1.2;
+  animation: textFadeIn 0.8s 0.35s ease both;
+}
+
+.loader-sub {
+  font-size: 13.5px;
+  color: rgba(255,255,255,0.55);
+  text-align: center;
+  font-weight: 500;
+  animation: textFadeIn 0.8s 0.5s ease both;
+  letter-spacing: 0.01em;
+}
+
+@keyframes textFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Progress bar ── */
+.progress-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: textFadeIn 0.8s 0.6s ease both;
+}
+
+.progress-bar-track {
+  width: 100%;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.10);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--a), var(--b), var(--a));
+  background-size: 200% 100%;
+  animation: barSlide 1.9s ease-in-out infinite, barShimmer 2s linear infinite;
+  width: 60%;
+}
+
+@keyframes barSlide {
+  0%   { width: 15%; margin-left: 0%; }
+  50%  { width: 70%; margin-left: 20%; }
+  100% { width: 15%; margin-left: 85%; }
+}
+
+@keyframes barShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.progress-label {
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.42);
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Animated dots */
+.dots::after {
+  content: '';
+  animation: dotCycle 1.4s steps(4) infinite;
+}
+
+@keyframes dotCycle {
+  0%   { content: ''; }
+  25%  { content: '.'; }
+  50%  { content: '..'; }
+  75%  { content: '...'; }
+  100% { content: ''; }
+}
+
+/* ── Bottom badge ── */
+.loader-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.10);
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.55);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  animation: textFadeIn 0.8s 0.8s ease both;
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 0 rgba(34,197,94,.6);
+  animation: badgePulse 1.6s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34,197,94,.5); }
+  50%      { transform: scale(1.4); box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+}
+
+/* ── iframe ── */
+iframe {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  border: none;
+  display: block;
+  z-index: 1;
+}
+</style>
+</head>
+<body>
+
+<div id="loading">
+
+  <!-- Floating particles -->
+  <div class="particles" id="particles"></div>
+
+  <div class="loader-card">
+
+    <!-- Brand -->
+    <div class="brand-eyebrow">Disease Surveillance Portal</div>
+
+    <!-- Logo with pulse rings -->
+    <div class="icon-wrap">
+      <div class="icon-ring"></div>
+      <div class="icon-ring"></div>
+      <div class="icon-ring"></div>
+      <div class="logo-holder">
+        <img src="https://drive.google.com/thumbnail?id=1HjdJvIxxDynhahGCV1fD0Zvl9-tcnr1c&sz=w512" alt="Disease Surveillance Portal" referrerpolicy="no-referrer">
+      </div>
+    </div>
+
+    <!-- Title -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;width:100%">
+      <div class="loader-title">High Risk Area Summary</div>
+      <div class="loader-sub">Dashboard initialising, please wait…</div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="progress-wrap">
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <div class="progress-label">Loading data<span class="dots"></span></div>
+    </div>
+
+    <!-- Live badge -->
+    <div class="loader-badge">
+      <span class="badge-dot"></span>
+      Connecting to Databse...
+    </div>
+
+  </div>
+</div>
+
+<iframe
+  src="https://script.google.com/macros/s/AKfycbzVAHsLDzOgxMPk23nL1XefGvVn9Q_zgG9-HuOvFdYFhN1hLKBQTSw-pJ7PahR1R11G/exec"
+  allow="geolocation"
+  allowfullscreen
+  title="High Risk Area Summary"
+  onload="document.getElementById('loading').style.display='none'">
+</iframe>
+
+<script>
+// Generate floating particles (aurora palette)
+(function(){
+  const container = document.getElementById('particles');
+  const colors = ['rgba(124,108,255,', 'rgba(34,211,238,', 'rgba(96,165,250,', 'rgba(255,255,255,'];
+  for (let i = 0; i < 24; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 6 + 3;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const opacity = Math.random() * 0.4 + 0.1;
+    p.style.cssText = `
+      width:${size}px;
+      height:${size}px;
+      left:${Math.random() * 100}%;
+      background:${color}${opacity});
+      animation-duration:${Math.random() * 10 + 8}s;
+      animation-delay:${Math.random() * 8}s;
+    `;
+    container.appendChild(p);
+  }
+})();
+</script>
+
+</body>
+</html>
